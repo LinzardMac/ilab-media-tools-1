@@ -248,9 +248,10 @@ class StorageTool extends ToolBase {
 		if($this->client && $this->client->enabled()) {
 			if(!isset($data['s3'])) {
 				$data = $this->processFile($upload_path, $data['file'], $data, $id);
-
-				if(isset($data['sizes'])) {
-					foreach($data['sizes'] as $key => $size) {
+				Logger::info("Processed File", $data);
+				// if data sizes are registered and either imgix is not enabled or 'originalsOnlyImport' is not checked
+				if(isset($data['sizes']) && ( !$imgixEnabled || !isset($this->originalsOnlyImport))) {
+				    foreach($data['sizes'] as $key => $size) {
 						if(!is_array($size)) {
 							continue;
 						}
@@ -1610,7 +1611,9 @@ class StorageTool extends ToolBase {
 			'current' => $current,
 			'currentFile' => $currentFile,
 			'enabled' => $this->enabled(),
-			'shouldCancel' => $shouldCancel
+			'shouldCancel' => $shouldCancel,
+            'imgixEnabled' => apply_filters('ilab_imgix_enabled', false),
+
 		]);
 	}
 
@@ -1649,7 +1652,12 @@ class StorageTool extends ToolBase {
 	 * Ajax method to start the import.
 	 */
 	public function importMedia() {
-		$args = [
+
+		if(isset($_GET['originalsOnlyImport'])) {
+			$this->originalsOnlyImport = true;
+		}
+
+        $args = [
 			'post_type' => 'attachment',
 			'post_status' => 'inherit',
 			'nopaging' => true,
