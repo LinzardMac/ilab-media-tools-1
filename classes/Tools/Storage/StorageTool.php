@@ -1659,7 +1659,7 @@ class StorageTool extends ToolBase {
 
         $args = [
 			'post_type' => 'attachment',
-			'post_status' => 'inherit',
+			'post_status' => array('inherit', 'publish', 'private' ),
 			'nopaging' => true,
 			'fields' => 'ids',
 		];
